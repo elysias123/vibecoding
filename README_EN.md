@@ -2,20 +2,20 @@
 
 [中文](./README.md) | [English](./README_EN.md)
 
-这是一个面向编程任务的技能，可以提升 vibecoding 过程中的体验，并提升代码的可靠性、可读性与可维护性。
+This is a skill designed for programming tasks. It improves the vibecoding experience and enhances code reliability, readability, and maintainability.
 
-## 安装
+## Installation
 
 ```bash
 npx skills elysias123/vibecoding
 ```
 
-## 使用方法
+## Usage
 
-- 在进行编程开发等相关任务时自动激活
-- 使用 `/vibecoding <on/off>` 控制
+- Automatically activates during programming development tasks
+- Use `/vibecoding <on/off>` to control it
 
-## 致谢
+## Thanks
 
 - [vuejs-ai/skills](https://github.com/vuejs-ai/skills)
 - [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)
