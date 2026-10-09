@@ -1,22 +1,40 @@
-# 前端基础参考
+# 前端设计参考
 
-用于 CSS、无障碍、性能、TypeScript 和工具链相关工作。
+用于与框架无关或跨框架的 UI 实现。不要用于纯视觉构思、品牌探索或非编程设计讨论。
 
-- 使用 CSS 自定义属性定义主题和设计令牌。
-- 使用 Tailwind 时，避免使用 `bg-${color}-500` 这样的动态类名拼接；使用完整类名以便提取。
-- 全局设置 `box-sizing: border-box`，采用移动优先的 `min-width` 媒体查询，并将选择器嵌套限制在三层以内。
-- 优先使用 `nav`、`main`、`article`、`button` 等语义化 HTML，而不是只用 `div` 组成结构。
-- 让每个交互元素都支持键盘操作，并提供适当的焦点管理。
-- 为图片提供有意义的 `alt` 文本；装饰性图片使用空 `alt`。
-- 满足 WCAG AA 对比度要求：正文 4.5:1，大号文本 3:1。
-- 提供 `prefers-reduced-motion` 回退方案。
-- 将 LCP 控制在 2.5 秒以内、INP 控制在 200 毫秒以内、CLS 控制在 0.1 以内。
-- 使用带明确尺寸的 WebP 或 AVIF 图片。
-- 内联关键 CSS，并延迟加载非关键资源。
-- 第三方脚本使用 `async` 或 `defer`，并在 hydration 后加载分析脚本。
-- 默认按路由进行代码拆分。
-- 为组件 props 和事件定义明确类型；使用收窄后的 `unknown`，避免使用 `any`。
-- 使用 Zod 或等效工具在运行时验证 API 响应。
-- 导出公共类型，并将内部类型保持为私有。
-- 通用 React、Vue 或 Svelte 工具链使用 Vite；Next.js 使用其内置工具。
-- 使用 ESM 导入，并避免 barrel 文件副作用，以保留 tree shaking 能力。
+## 外部技能
+
+### 设计方向与策略
+
+- 采用生产级界面设计：根据目标推导基调与约束，选择有辨识度的字体，定义基于 CSS 变量的色彩系统，优先采用 CSS 动效，并有意识地组织空间构图。
+- **从零开始，创造独特视觉方向**：优先使用 `apple-design`，强制进行设计计划与反模板审查，建立独特的美学方向和设计 token 系统。
+- **已有明确设计方向，但动效和交互细节粗糙**：使用 `animate` 和 `apple-design`，为系统注入专业级别的动效和交互细节。
+- **需要审计现有动画代码**：使用 `improve-animations` 产出改进计划。
+- **不确定动效术语或想发现动效机会**：使用 `animation-vocabulary` 和 `find-animation-opportunities`。
+- **移动端体验优化**：使用 `mobile-native` 解决手感问题。
+- **组合使用**：初期用 `apple-design` 确立美学方向，实现阶段引入 `animate`、`mobile-native` 等打磨细节。
+
+### 动效与交互细节
+
+- `apple-design`：<https://github.com/emilkowalski/skills/blob/main/skills/apple-design/SKILL.md>
+  - 从 Apple WWDC 设计演讲中提炼设计和动效原则，翻译成 Web 开发可用的规则，让 AI 对齐 Apple 级别的设计标准。
+- `animation-vocabulary`：<https://github.com/emilkowalski/skills/blob/main/skills/animation-vocabulary/SKILL.md>
+  - 反向查询的术语词典，当你只能模糊描述动效时，帮你找到准确专业术语，以便下达精确指令。
+- `improve-animations`：<https://github.com/emilkowalski/skills/blob/main/skills/improve-animations/SKILL.md>
+  - 扫描代码库中的动画代码，产出按优先级排序的改进计划，供其他 Agent 执行修复。
+- `find-animation-opportunities`：<https://github.com/emilkowalski/skills/blob/main/skills/find-animation-opportunities/SKILL.md>
+  - 发现“该动却没动”的地方，同时指出不应添加动画的高频操作点，只读，提出动效建议和参数。
+- `animate`：<https://github.com/emilkowalski/skills/blob/main/skills/animate/SKILL.md>
+  - 从零开始构建动画，严格按照决策顺序：该不该动 → 目的 → 工具 → 属性 → 曲线 → 时长，写出能通过严格质量评审的动画代码。
+- `mobile-native`：<https://github.com/emilkowalski/skills/blob/main/skills/mobile-native/SKILL.md>
+  - 解决 Web 应用在手机上“手感像网页而不像 App”的问题，处理移动端特有细节：粘滞 hover、点击高亮闪烁、100vh 视口 bug、输入框自动缩放、点击延迟、安全区域适配等。
+  - **使用时机**：项目实现和精修阶段，需要打磨交互细节、提升“手感”时。尤其适合需要达到 Apple、Linear 级别动效品质的场景。
+
+## 内置回退规则
+
+- 建立清晰的层级，每个视图只设一个主要操作，并弱化次要元素。
+- 通过 CSS 自定义属性使用一种主色、一种强调色和中性色。
+- 最多使用两种字体系列，并保持正文 4.5:1、大号文本 3:1 的对比度。
+- 使用一致的间距刻度，例如以 4px 为基准或采用 Tailwind 默认值。
+- 使用细微的 150 至 300ms 交互过渡，并遵循 `prefers-reduced-motion`。
+- 避免使用没有用户体验目的的装饰元素。

@@ -1,29 +1,38 @@
-# 后端任务路由器
+# 后端基础参考
 
-仅在主技能激活后使用此路由器。加载匹配的最小后端参考集合。
+此参考用于跨领域后端工作：API 设计、数据库模式、身份验证或授权。请与技术栈专用参考一起使用。
 
-## 加载策略
+## 文件架构示例
 
-- 匹配任务后，仅加载列出的子文件；绝不预加载无关参考。
-- 外部技能不可用时，使用匹配文件中的回退规则，并在结果中说明。
-- 对于 API 设计、数据库设计、身份验证或授权，将 `fundamentals.md` 与技术栈专用参考一起加载。
+默认按业务职责划分一级目录：
 
-## 路由
+```text
+backend/
+├─ api/          # 对外接口
+├─ business/     # 业务模块和业务逻辑
+├─ database/         # 数据库、缓存、文件存储和数据结构变更
+├─ config/       # 配置
+└─ tests/        # 测试代码
+```
+> 文件夹名仅作分类示例，不绑定语言或框架；也不强制使用这个结构和命名规则，不会导致歧义即可
 
-| 匹配条件 | 加载文件 | 说明 |
-| --- | --- | --- |
-| Node.js、Express、Fastify、NestJS 或 Hono | `references/backend/nodejs.md` | |
-| Python、FastAPI、Flask 或 Django | `references/backend/python.md` | |
-| Go、Gin、Echo 或 Fiber | `references/backend/go.md` | |
-| Java、Spring Boot、Quarkus 或 Micronaut | `references/backend/java.md` | |
-| Rust、Actix-web、Axum 或 Rocket | `references/backend/rust.md` | |
-| REST 或 GraphQL API 设计 | `references/backend/fundamentals.md` | |
-| 数据库设计或 ORM | `references/backend/fundamentals.md` 与对应技术栈文件 | |
-| 身份验证或授权 | `references/backend/fundamentals.md` 与对应技术栈文件 | |
-| 不受支持的后端技术栈 | `references/backend/fundamentals.md` | 应用通用原则。 |
+- 目录名仅作分类示例，不绑定语言或框架；小项目可合并目录，复杂度增加后再拆分。并且将 API、业务逻辑和数据库读写分离到不同目录，避免混杂。
+- 业务逻辑应与框架、数据库和外部服务解耦，避免直接依赖 ORM、数据库或 HTTP 客户端。
+- 文件架构需要保存到`AGENTS.md`，并在项目中保持一致；实时更新架构变更，避免出现过时的目录或文件。
 
-## 技术栈方向
+## API 设计
 
-- **简单快速**：使用最简单的框架选项，并跳过高级模式。
-- **可维护**：使用结构化框架、ORM 和验证层。
-- **高性能**：使用面向性能的框架、优化的数据库访问和缓存。
+- 使用复数资源名词和 HTTP 动词：使用 `/users`，而不是 `/user`。
+- 返回一致的错误结构：`{ "error": { "code": "...", "message": "..." } }`，并使用合适的 HTTP 状态码。
+- 大型数据集优先使用游标分页；小型且稳定的数据集可使用偏移分页。
+- 公共 API 使用 `/v1/` 路径版本控制；内部服务使用请求头版本控制。
+- 在边界验证所有输入；绝不信任客户端数据。
+- 为公共端点设置速率和请求大小限制。
+
+## 数据库模式
+
+- 业务逻辑使用 ORM 或查询构建器；仅在性能关键路径使用原始 SQL。
+- 每次架构变更都使用迁移；绝不手动修改生产架构。
+- 为外键和高频查询列建立索引，但不要为写入密集型表过度建立索引。
+- 对必须原子完成的多步写入使用事务。
+- 生产环境使用连接池。
