@@ -1,0 +1,15 @@
+{
+  "name": "vibecoding",
+  "interface": {
+    "displayName": "vibecoding"
+  },
+  "plugins": [
+    {
+      "name": "vibecoding",
+      "source": {
+        "source": "local",
+        "path": "./"
+      }
+    }
+  ]
+}

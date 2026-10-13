@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python D:/project/vibecoding-optimization/skills/vibecoding/scripts/retry_guard.py --host codex",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python D:/project/vibecoding-optimization/skills/vibecoding/scripts/retry_guard.py --host codex",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

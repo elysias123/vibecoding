@@ -1,0 +1,12 @@
+{
+  "name": "vibecoding",
+  "owner": {
+    "name": "vibecoding"
+  },
+  "plugins": [
+    {
+      "name": "vibecoding",
+      "source": "./"
+    }
+  ]
+}

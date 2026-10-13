@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import os,runpy;runpy.run_path(os.path.join(os.environ.get('PLUGIN_ROOT') or os.environ['CLAUDE_PLUGIN_ROOT'],'skills','vibecoding','scripts','retry_guard.py'),run_name='__main__')\" --host codex",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import os,runpy;runpy.run_path(os.path.join(os.environ.get('PLUGIN_ROOT') or os.environ['CLAUDE_PLUGIN_ROOT'],'skills','vibecoding','scripts','retry_guard.py'),run_name='__main__')\" --host codex",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

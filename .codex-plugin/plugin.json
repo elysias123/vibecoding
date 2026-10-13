@@ -1,0 +1,7 @@
+{
+  "name": "vibecoding",
+  "version": "0.1.0",
+  "description": "Track repeated exact shell-command failures and stop the third call.",
+  "skills": "./skills/",
+  "hooks": "./hooks/codex-hooks.json"
+}
