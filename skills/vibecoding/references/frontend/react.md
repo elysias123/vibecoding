@@ -23,9 +23,9 @@
 
 ## 内置回退规则
 
-- 使用单一职责组件，并在职责出现分歧时以约 200 行为界拆分。
+- 按职责、复用需求和可理解性决定组件拆分，不以行数作为拆分阈值。
 - 对昂贵工作或回调稳定性使用 useMemo 和 useCallback；不要过度记忆化。
-- 使用 SWR 或 TanStack Query 获取数据，而不是直接组合 useEffect 与 fetch。
+- 数据获取优先沿用现有方式；存在缓存、请求去重或失效管理等具体需求时，再考虑 SWR 或 TanStack Query，不为普通请求改动引入依赖或迁移现有实现。
 - 仅在需要时，将状态从组件本地逐步扩展到 Context、Zustand 或 Jotai，再到 Redux。
 - 在 Next.js 中优先使用 Server Components，仅为交互添加 use client。
 - 使用 Promise.all 并行执行独立异步工作，避免瀑布。
