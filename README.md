@@ -1,55 +1,145 @@
 # vibecoding
 
-[中文](./README.md) | [English](./README_EN.md)
+> 面向编程任务的 Agent Skill：少做无关工作，完成必要实现，并用与风险相称的验证交付结果。
 
-这是一个面向编程任务的技能，可以提升 vibecoding 过程中的体验，并提升代码的可靠性、可读性与可维护性。
+[English](./README_EN.md)
 
-仓库同时提供 Codex 与 Claude Code 插件：设计目标是同一宿主、会话、目录中的同一原始 shell 命令累计两次明确失败后拒绝下一次相同调用；但当前 Codex 官方响应协议只给出 stdout 字符串，无法可靠完成计数，因此 Codex 目前属于协议降级，不能宣称覆盖全部路径。
+`vibecoding` 是一份可复用的编程工作规范，也提供面向 Codex 与 Claude Code 的可选插件入口。它不替代你的项目规则、测试或权限控制；它帮助编码代理在明确范围内选择最小完整方案，避免无意义的重试、过度设计和无关改动。
 
-## 安装与启用
+## 适用场景
 
-仅安装技能：
+- 功能开发、缺陷修复、重构、测试、构建、CI、配置、基础设施和模式变更；
+- 希望代理先理解受影响代码与约束，再做最小完整修改；
+- 希望把验证范围与改动风险匹配，而非机械执行整套检查；
+- 希望在重复失败时分析根因或切换方法，而不是无限重试。
+
+不适用于纯问答、翻译、摘要或与工程交付无关的任务。
+
+## 提供什么
+
+### 核心 Skill
+
+`skills/vibecoding/SKILL.md` 定义编程工作的默认行为：
+
+- 保持任务范围、现有架构、权限边界和用户指定实现；
+- 优先复用现有代码、平台能力和已安装依赖，不为小需求引入新框架或抽象；
+- 为非平凡逻辑保留聚焦测试或自检；
+- 用真实运行证据验证真实服务，不把构建通过当作部署完成；
+- 同一方案连续失败后切换合理方法，并清楚说明原始错误与取舍；
+- 默认使用中文沟通，同时保留代码、命令、路径和错误原文的原始形式。
+
+### 可选重复失败 Guard
+
+插件中的 Hook 尝试把“同一方案连续失败后不要无限重试”落实到 shell 调用：在**同一宿主、会话、工作目录和原始命令文本**内，两个明确失败会使下一次相同调用在执行前被拒绝。
+
+- 使用 Python 标准库和 SQLite，不需要 `pip`；
+- 只保存计数键摘要、最近退出码和调用去重记录，不保存完整命令或完整输出；
+- 成功只清除该命令自己的计数；
+- 支持带理由的定向 reset；
+- 不解析 shell 语义，不重写命令，也不拦截 MCP、浏览器或其他专用工具。
+
+## 快速开始
+
+### 只安装 Skill
+
+需要 Node.js 与 `npx`。以下命令从本仓库选择 `vibecoding` skill，安装时保留交互确认以便先审阅内容：
 
 ```bash
-npx skills elysias123/vibecoding
+npx skills add elysias123/vibecoding --skill vibecoding
 ```
 
-技能在编程任务中自动激活，也可使用 `/vibecoding on/off` 控制。仅安装技能不会启用失败 guard；该开关也不会关闭已经安装并信任的 hooks。
+也可以指定目标 Agent，例如：
 
-插件版本为 `0.1.0`，需要 Python 3.10+（标准库，无需 pip）、支持对应 hooks 协议的宿主，以及可写的系统临时目录。hook 进程必须能通过 `python` 找到解释器；macOS/Linux 若只提供 `python3`，或需要指定虚拟环境，请先修改 hook command 中的解释器。插件由宿主提供根目录环境变量，不依赖当前 shell 的变量展开。
+```bash
+npx skills add elysias123/vibecoding --skill vibecoding --agent codex
+```
 
-Codex 本地 marketplace 安装：
+只安装 Skill 不会启用 Hook Guard。
+
+### 安装 Codex 插件
+
+仓库包含 Codex marketplace 清单和插件清单。公开仓库版本包含本次文件后，可直接添加远程 marketplace：
 
 ```powershell
-codex plugin marketplace add D:/project/vibecoding-optimization
+codex plugin marketplace add elysias123/vibecoding
 codex plugin add vibecoding@vibecoding
 ```
 
-Claude Code 在本仓库根目录执行：
+安装后在 Codex 的 `/hooks` 中逐项审阅并信任本插件 Hook，再开启新会话。插件安装不等于 Hook 已启用。
 
-```powershell
-claude plugin marketplace add ./
+### 安装 Claude Code 插件
+
+在 Claude Code 会话中输入：
+
+```text
+/plugin marketplace add elysias123/vibecoding
+/plugin install vibecoding@vibecoding
+```
+
+或在终端中运行：
+
+```bash
+claude plugin marketplace add elysias123/vibecoding
 claude plugin install vibecoding@vibecoding
 ```
 
-安装后分别在各宿主中审阅并信任本插件 hooks，按宿主提示重新加载或开启新会话；插件安装本身不等于 hooks 已启用。Codex 必须允许项目配置且 hooks 功能未被本地或管理员配置禁用；Claude Code 的 hooks 也须未被设置禁用。不要同时注册插件 hooks 与项目手动示例。
+## 使用方式
 
-完整的[操作前提、项目手动启用、定向重置、移除和真实宿主验收步骤](./skills/vibecoding/references/hooks.md)见 hooks 文档。
+Skill 在编程任务中可由支持 Skill 的宿主自动选择；也可按宿主界面中显示的 `vibecoding` Skill 名称显式调用。`/vibecoding on/off` 仅控制 Skill 指令是否启用，**不会关闭已经安装和受信任的 Hook**。
 
-## 协议与覆盖限制
+Skill 的重点不是强制固定流程，而是让代理在实际约束下作出更小、更完整的改动：
 
-- Codex 监听 `PreToolUse` / `PostToolUse` 的 `^Bash$`；Claude Code 监听这两个事件及 `PostToolUseFailure` 的 `^(Bash|PowerShell)$`。处理同步完成，超时 5 秒。
-- **Codex 协议降级（未覆盖）**：固定提交 [`be5296d`](https://github.com/openai/codex/blob/be5296d4672f59205c1b8a76f46e74eae4f10d51/codex-rs/core/src/tools/context.rs) 的 `post_tool_use_response` 直接产生 `JsonValue::String(truncated_output_with_policy)`，只有命令 stdout 正文，没有可信退出码头部。Codex 的任意字符串，包括 JSON 字符串或宿主头模拟，均跳过并给出 warning；只有事件对象中明确整数 `exit_code` / `exitCode` 才能计数。因此当前 Codex hooks 不能完整计数或硬阻止所有路径，需宿主提供可信结构化退出码；不使用 wrapper、transcript 日志或 host patch。
-- Claude 的成功事件通常没有退出码；本 guard 只接受已完成响应中明确的整数 `exit_code` / `exitCode`。缺少可靠退出码时警告并跳过，**不清旧计数**。两次明确失败后的第三次相同调用仍会被拒绝，修复后需定向 reset 或更完整的宿主协议。
-- Claude 失败只读取 `PostToolUseFailure.error` 第一行的精确 `Exit code N`；中断跳过。未知协议不通过 `error` 关键词猜测结果，而是简短警告并跳过。
-- 只匹配原始命令文本和宿主提供的目录，不分析 shell 内部 `cd`；不拦截已并行放行的调用，不覆盖专门工具或 MCP，不承诺安全沙箱。
-- Codex 后台原始完成事件支持待真实验收；Claude 后台 `TaskOutput` 不计数。临时数据库可能被操作系统清理。
+1. 阅读任务触及的代码、规则、调用方和验证方式；
+2. 选择现有实现、标准库、平台能力或已安装依赖中最小可行的一层；
+3. 补齐会被改动影响的调用方、测试、配置或文档；
+4. 只运行能证明受影响行为的必要验证；
+5. 说明已验证结果与会影响使用的未验证边界。
 
-兼容目标是 Windows、macOS、Linux；当前脚本级验收范围仅为 Windows；Codex 因官方响应字段不兼容处于协议阻塞，Claude 成功事件也通常缺少退出码。其他操作系统与两个真实宿主尚未验证，不能把配置入口描述成完整防护。项目内实现已通过 Windows 聚焦测试；尚未安装或信任 hooks，测试不代表真实宿主已启用。
+## Guard 行为与状态
+
+Guard 的键为：
+
+```text
+宿主 + 会话 ID + 规范化工作目录 + 原始命令文本
+```
+
+| 完成结果 | 处理 |
+| --- | --- |
+| 明确非零退出码 | 对该键的连续失败数加一 |
+| 明确零退出码 | 清除该键的失败数 |
+| 正在运行、中断、未知结果或 Hook 错误 | 不计数 |
+| 已有两次明确失败 | 在 `PreToolUse` 拒绝下一次相同调用 |
+
+默认状态库位于系统临时目录下的 `vibecoding-retry-guard/state.sqlite3`。它可能被系统临时文件清理；不应将它当作审计日志或安全边界。
+
+如需在修复问题或得到明确重试要求后清除单条记录，请使用 [Hook 指南中的定向 reset 步骤](./skills/vibecoding/references/hooks.md#定向-reset)。该指南还包含手动接入、移除、数据库清理与真实宿主验收方法。
+
+## 支持状态
+
+| 能力 | 状态 |
+| --- | --- |
+| 作为独立 Skill 使用 | 支持 |
+| Claude Code 插件发现与 Hook 配置 | 支持；失败计数受宿主事件字段限制 |
+| Codex 插件发现与 Hook 配置 | 支持；当前退出码协议不足，完整 Guard 受阻 |
+| Windows 脚本级测试 | 已验证 |
+| macOS / Linux 与真实宿主 Hook 会话 | 待验证 |
+
+Hook 是工作流护栏，不是安全沙箱：它不能撤销已放行的并行调用，也不覆盖不经过本地 Hook 路径的工具。
 
 ## 致谢
 
-- [vuejs-ai/skills](https://github.com/vuejs-ai/skills)
-- [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)
-- [anthropics/claude-code](https://github.com/anthropics/claude-code)
-- [hexiecs/talk-normally](https://github.com/hexiecs/talk-normal)
+本项目参考或受益于以下项目与文档：
+
+- [vuejs-ai/skills](https://github.com/vuejs-ai/skills) 与 [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)：Skill 生态与组织方式；
+- [Anthropic Claude Code](https://github.com/anthropics/claude-code) 与 Claude Code Plugin / Hook 文档：插件与事件协议；
+- [OpenAI Codex](https://github.com/openai/codex) 与 Codex Hook 文档：插件和 Hook 接入；
+- [npxskills](https://github.com/dz3ai/npxskills)：跨 Agent Skill 安装工具；
+- [Ponytail](https://github.com/DietrichGebert/ponytail)：保持改动最小且完整的工程取向；
+- [Stop That Shit](https://github.com/lennney/stop-that-shit)：多宿主 Skill + Hook 插件目录布局的参考；
+- [talk-normally](https://github.com/hexiecs/talk-normal)：直接、清晰的沟通取向。
+
+以上项目均归其各自作者与维护者所有；本项目不代表与其存在隶属或官方合作关系。
+
+## 许可证
+
+本项目采用 [MIT License](./LICENSE)。
